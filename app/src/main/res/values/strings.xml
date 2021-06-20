@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">VideoPag3</string>
+    <string name="no_data">Нет данных</string>
+    <string name="Retry">Повторить</string>
+</resources>
