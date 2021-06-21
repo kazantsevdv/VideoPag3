@@ -33,11 +33,13 @@ class AdapterList(
 
         fun bind(data: VideosItem?) {
             if (layoutPosition != RecyclerView.NO_POSITION) {
-                with(binding) {
-                    root.setOnClickListener { onListItemClickListener.onItemClick(data!!) }
-                    tvName.text = data?.original_title
-                    imageLoader.loadInto(data?.poster_path!!, ivImage)
-                    tvRelease.text=data?.release_date
+                data?.let {
+                    with(binding) {
+                        root.setOnClickListener { onListItemClickListener.onItemClick(data) }
+                        tvName.text = data.original_title
+                        imageLoader.loadInto(data.poster_path ?: "", ivImage)
+                        tvRelease.text = data.release_date
+                    }
                 }
             }
 

@@ -5,14 +5,17 @@ import androidx.paging.PagingState
 import com.example.videopag3.repo.model.VideosItem
 import dagger.assisted.AssistedInject
 import retrofit2.HttpException
+import javax.inject.Inject
 
-class MoviePagingSource @AssistedInject constructor(
+class MoviePagingSource @Inject constructor(
     val api: IVideosRepo,
 ) : PagingSource<Int, VideosItem>() {
     override fun getRefreshKey(state: PagingState<Int, VideosItem>): Int? {
-        val anchorPosition = state.anchorPosition ?: return null
-        val anchorPage = state.closestPageToPosition(anchorPosition) ?: return null
-        return anchorPage.prevKey?.plus(1) ?: anchorPage.nextKey?.minus(1)
+        return state.anchorPosition?.let { anchorPosition ->
+            val anchorPage = state.closestPageToPosition(anchorPosition)
+            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+        }
+
     }
 
 

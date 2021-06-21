@@ -23,8 +23,8 @@
         android:label="VideoItemFragment" >
         <argument
             android:name="ARG_PARAM1"
-            app:argType="string"
-            android:defaultValue='""' />
+            app:argType="integer"
+            android:defaultValue="0" />
 
     </fragment>
 </navigation>

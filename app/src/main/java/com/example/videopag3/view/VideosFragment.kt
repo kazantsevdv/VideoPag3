@@ -5,18 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
+import androidx.recyclerview.widget.RecyclerView
 import com.example.videopag3.App
 import com.example.videopag3.R
 import com.example.videopag3.databinding.FragmentVideosBinding
 import com.example.videopag3.repo.image.IImageLoader
 import com.example.videopag3.repo.model.VideosItem
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
@@ -59,26 +62,28 @@ class VideosFragment : Fragment() {
     }
 
     private fun loadData() {
-        viewBinding.data.setHasFixedSize(true)
-        lifecycleScope.launch {
+
+        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
             viewModel.movies.collectLatest {
                 adapter.submitData(it)
             }
         }
-
     }
 
     private fun setupUI() {
+
+        //adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         viewBinding.data.adapter = adapter
             .withLoadStateHeaderAndFooter(
-                header = LoaderStateAdapter(),
-                footer = LoaderStateAdapter()
+                header = LoaderStateAdapter { adapter.retry() },
+                footer = LoaderStateAdapter { adapter.retry() }
+
             )
 
-        adapter.addLoadStateListener { state ->
-            with(viewBinding) {
-                data.isVisible = state.refresh != LoadState.Loading
-                progress.isVisible = state.refresh == LoadState.Loading
+        viewBinding.swipeRefresh.setOnRefreshListener { adapter.refresh() }
+        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow.collectLatest { loadStates ->
+                viewBinding.swipeRefresh.isRefreshing = loadStates.refresh is LoadState.Loading
             }
         }
 
@@ -88,7 +93,7 @@ class VideosFragment : Fragment() {
         object : OnListItemClickListener {
             override fun onItemClick(data: VideosItem) {
                 val bundle = Bundle()
-                bundle.putString(VideoItemFragment.ARG_PARAM1, data.id.toString())
+                bundle.putInt(VideoItemFragment.ARG_PARAM1, data.id)
                 navigation.navigate(R.id.action_videosFragment_to_videoItemFragment, bundle)
             }
         }

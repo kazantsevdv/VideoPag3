@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import com.example.videopag3.App
 import com.example.videopag3.databinding.FragmentVideoInfoBinding
 import com.example.videopag3.model.AppState
@@ -22,6 +21,7 @@ class VideoItemFragment : Fragment() {
     @Inject
     lateinit var viewModeProvider: Provider<VideoItemViewModel.Factory>
     private val viewModel: VideoItemViewModel by viewModels { viewModeProvider.get() }
+
     @Inject
     lateinit var imageLoader: IImageLoader<ImageView>
 
@@ -29,7 +29,7 @@ class VideoItemFragment : Fragment() {
     private var _viewBinding: FragmentVideoInfoBinding? = null
     private val viewBinding get() = checkNotNull(_viewBinding)
 
-    private val id: String? by lazy { arguments?.getString(ARG_PARAM1) }
+    private val id: Int? by lazy { arguments?.getInt(ARG_PARAM1,0) }
 
 
     override fun onCreateView(
@@ -45,7 +45,7 @@ class VideoItemFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupObservers()
-        id?.let { viewModel.getVideoInfo(it.toInt()) }
+        id?.let { viewModel.getVideoInfo(it) }
     }
 
 
@@ -69,10 +69,10 @@ class VideoItemFragment : Fragment() {
 
     private fun setupUI(data: Video) {
         viewBinding.apply {
-            imageLoader.loadInto(data.backdrop_path,imBag)
-            imageLoader.loadInto(data.poster_path,imPoster)
-            title.text=data.title
-            overview.text=data.overview
+            imageLoader.loadInto(data.backdrop_path, imBag)
+            imageLoader.loadInto(data.poster_path, imPoster)
+            title.text = data.title
+            overview.text = data.overview
         }
     }
 
@@ -99,14 +99,18 @@ class VideoItemFragment : Fragment() {
             progressBar.visibility = View.GONE
             this.data.visibility = View.GONE
             tvNoData.visibility = View.VISIBLE
-            Snackbar.make(viewBinding.root, result.error.localizedMessage, Snackbar.LENGTH_LONG)
+            Snackbar.make(
+                viewBinding.root,
+                result.error.localizedMessage ?: "",
+                Snackbar.LENGTH_LONG
+            )
                 .show()
         }
 
     }
 
     private fun showLoading() {
-        viewBinding?.apply {
+        viewBinding.apply {
             progressBar.visibility = View.VISIBLE
             tvNoData.visibility = View.GONE
         }
@@ -122,10 +126,10 @@ class VideoItemFragment : Fragment() {
         const val ARG_PARAM1 = "ARG_PARAM1"
 
         @JvmStatic
-        fun newInstance(id: String) =
+        fun newInstance(id: Int) =
             VideoItemFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, id)
+                    putInt(ARG_PARAM1, id)
                 }
             }
     }

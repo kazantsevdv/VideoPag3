@@ -1,96 +1,41 @@
 package com.example.videopag3.view
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.videopag3.databinding.ItemErrorBinding
-import com.example.videopag3.databinding.ItemProgressBinding
+import com.example.videopag3.databinding.ItemLoadStateBinding
+import com.example.videopag3.databinding.ItemVideoBinding
+import com.example.videopag3.repo.model.VideosItem
 
 
-class LoaderStateAdapter() : LoadStateAdapter<LoaderStateAdapter.ItemViewHolder>() {
+class LoaderStateAdapter(
+    private val retry: () -> Unit
+) : LoadStateAdapter<LoaderStateAdapter.ItemViewHolder>() {
 
-    override fun getStateViewType(loadState: LoadState) = when (loadState) {
-        is LoadState.NotLoading -> error("Not supported")
-        LoadState.Loading -> PROGRESS
-        is LoadState.Error -> ERROR
-    }
+    private lateinit var bindingItem: ItemLoadStateBinding
 
     override fun onBindViewHolder(holder: ItemViewHolder, loadState: LoadState) {
-        holder.bind(loadState)
+
+        bindingItem.loadStateRetry.isVisible = loadState is LoadState.Error
+
+        bindingItem.loadStateRetry.setOnClickListener {
+            retry.invoke()
+        }
+
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): ItemViewHolder {
-        return when (loadState) {
-            LoadState.Loading -> ProgressViewHolder(LayoutInflater.from(parent.context), parent)
-            is LoadState.Error -> ErrorViewHolder(LayoutInflater.from(parent.context), parent)
-            is LoadState.NotLoading -> error("Not supported")
-        }
+        bindingItem =
+            ItemLoadStateBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ItemViewHolder(bindingItem)
+
     }
 
-    private companion object {
 
-        private const val ERROR = 1
-        private const val PROGRESS = 0
-    }
-
-    abstract class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-
-        abstract fun bind(loadState: LoadState)
-    }
-
-    class ProgressViewHolder internal constructor(
-        private val binding: ItemProgressBinding
-    ) : ItemViewHolder(binding.root) {
-
-        override fun bind(loadState: LoadState) {
-            // Do nothing
-        }
-
-        companion object {
-
-            operator fun invoke(
-                layoutInflater: LayoutInflater,
-                parent: ViewGroup? = null,
-                attachToRoot: Boolean = false
-            ): ProgressViewHolder {
-                return ProgressViewHolder(
-                    ItemProgressBinding.inflate(
-                        layoutInflater,
-                        parent,
-                        attachToRoot
-                    )
-                )
-            }
-        }
-    }
-
-    class ErrorViewHolder internal constructor(
-        private val binding: ItemErrorBinding
-    ) : ItemViewHolder(binding.root) {
-
-        override fun bind(loadState: LoadState) {
-            require(loadState is LoadState.Error)
-            binding.errorMessage.text = loadState.error.localizedMessage
-        }
-
-        companion object {
-
-            operator fun invoke(
-                layoutInflater: LayoutInflater,
-                parent: ViewGroup? = null,
-                attachToRoot: Boolean = false
-            ): ErrorViewHolder {
-                return ErrorViewHolder(
-                    ItemErrorBinding.inflate(
-                        layoutInflater,
-                        parent,
-                        attachToRoot
-                    )
-                )
-            }
-        }
-    }
+    inner class ItemViewHolder(private val loadStateViewBinding: ItemLoadStateBinding) :
+        RecyclerView.ViewHolder(loadStateViewBinding.root)
 }
