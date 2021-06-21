@@ -125,13 +125,7 @@ class VideoItemFragment : Fragment() {
     companion object {
         const val ARG_PARAM1 = "ARG_PARAM1"
 
-        @JvmStatic
-        fun newInstance(id: Int) =
-            VideoItemFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(ARG_PARAM1, id)
-                }
-            }
+
     }
 
 

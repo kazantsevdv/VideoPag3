@@ -2,14 +2,12 @@ package com.example.videopag3.di
 
 import com.example.videopag3.BuildConfig
 import com.example.videopag3.repo.api.IDataSource
-import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Named

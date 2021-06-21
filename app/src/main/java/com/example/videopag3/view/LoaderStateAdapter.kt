@@ -7,8 +7,7 @@ import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.videopag3.databinding.ItemLoadStateBinding
-import com.example.videopag3.databinding.ItemVideoBinding
-import com.example.videopag3.repo.model.VideosItem
+import com.google.android.material.snackbar.Snackbar
 
 
 class LoaderStateAdapter(
@@ -24,8 +23,13 @@ class LoaderStateAdapter(
         bindingItem.loadStateRetry.setOnClickListener {
             retry.invoke()
         }
-
-
+        if (loadState is LoadState.Error) {
+            Snackbar.make(
+                bindingItem.root,
+                loadState.error.localizedMessage ?: "",
+                Snackbar.LENGTH_SHORT
+            ).show()
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): ItemViewHolder {
@@ -36,6 +40,6 @@ class LoaderStateAdapter(
     }
 
 
-    inner class ItemViewHolder(private val loadStateViewBinding: ItemLoadStateBinding) :
+    inner class ItemViewHolder(loadStateViewBinding: ItemLoadStateBinding) :
         RecyclerView.ViewHolder(loadStateViewBinding.root)
 }

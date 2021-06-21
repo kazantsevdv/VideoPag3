@@ -1,9 +1,5 @@
 package com.example.videopag3.repo.model
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-
-
 
 data class VideosItem(
     val id: Int,
