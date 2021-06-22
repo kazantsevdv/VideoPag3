@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -54,14 +54,16 @@ class VideosFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUI()
+
         loadData()
 
     }
 
+
     private fun loadData() {
 
         viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-            viewModel.movies.collectLatest {
+            viewModel.movies.collectLatest{
                 adapter.submitData(it)
             }
         }
@@ -72,22 +74,46 @@ class VideosFragment : Fragment() {
 
         viewBinding.data.adapter = adapter
             .withLoadStateHeaderAndFooter(
-                header = LoaderStateAdapter { adapter.retry() },
-                footer = LoaderStateAdapter { adapter.retry() }
+                header = LoaderStateAdapter({ adapter.retry() }, {
+                    Snackbar.make(
+                        viewBinding.root,
+                        it,
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                }),
+                footer = LoaderStateAdapter({ adapter.retry() }, {
+                    Snackbar.make(
+                        viewBinding.root,
+                        it,
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                })
 
             )
 
         viewBinding.swipeRefresh.setOnRefreshListener { adapter.refresh() }
+
+        loadStateRefresh()
+
+        viewBinding.retry.setOnClickListener { adapter.refresh() }
+    }
+
+    private fun loadStateRefresh() {
         viewLifecycleOwner.lifecycleScope.launchWhenCreated {
             adapter.loadStateFlow.collectLatest { loadStates ->
-                val refresh=loadStates.refresh
+                val refresh = loadStates.refresh
                 viewBinding.swipeRefresh.isRefreshing = loadStates.refresh is LoadState.Loading
-                if(refresh is LoadState.Error){
-                    Snackbar.make(viewBinding.root,refresh.error.localizedMessage?:"",Snackbar.LENGTH_SHORT).show()
+                viewBinding.retry.isVisible = refresh is LoadState.Error
+                if (refresh is LoadState.Error) {
+
+                    Snackbar.make(
+                        viewBinding.root,
+                        refresh.error.localizedMessage ?: "",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
-
     }
 
     private val onListItemClickListener: OnListItemClickListener =

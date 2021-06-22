@@ -6,15 +6,19 @@ import com.example.videopag3.repo.model.VideosItem
 import retrofit2.HttpException
 import javax.inject.Inject
 
-class MoviePagingSource @Inject constructor(
-    val api: IVideosRepo,
+class MoviePagingSource (
+    private val api: IVideosRepo,
 ) : PagingSource<Int, VideosItem>() {
     override fun getRefreshKey(state: PagingState<Int, VideosItem>): Int? {
-        return state.anchorPosition?.let { anchorPosition ->
-            val anchorPage = state.closestPageToPosition(anchorPosition)
-            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
-        }
+//        return  state.anchorPosition?.let { anchorPosition ->
+//            val anchorPage = state.closestPageToPosition(anchorPosition)
+//            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+//
+//        }
 
+        return state.anchorPosition?.let { anchorPosition ->
+            state.closestPageToPosition(anchorPosition)?.prevKey
+        }
     }
 
 
@@ -24,14 +28,14 @@ class MoviePagingSource @Inject constructor(
             val nextPage = params.key ?: 1
             val response = api.getVideos(nextPage)
 
-            if (response.isSuccessful) {
-                return LoadResult.Page(
+            return if (response.isSuccessful) {
+                LoadResult.Page(
                     data = response.body()!!.results,
-                    prevKey = if (nextPage == 1) null else nextPage - 1,
-                    nextKey = if (nextPage == response.body()!!.total_pages) null else response.body()!!.page + 1
+                    prevKey = if (nextPage == 1) null else response.body()!!.page - 1,
+                    nextKey = if (nextPage > response.body()!!.total_pages) null else response.body()!!.page + 1
                 )
             } else {
-                return LoadResult.Error(HttpException(response))
+                LoadResult.Error(HttpException(response))
             }
 
 

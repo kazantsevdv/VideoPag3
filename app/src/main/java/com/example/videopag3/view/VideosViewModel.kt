@@ -18,7 +18,6 @@ class VideosViewModel @Inject constructor(private val repository: IVideosRepo) :
         MoviePagingSource(repository)
     }.flow
 
-
    @Suppress("UNCHECKED_CAST")
     class Factory @Inject constructor(
         private val viewModerProvider: Provider<VideosViewModel>

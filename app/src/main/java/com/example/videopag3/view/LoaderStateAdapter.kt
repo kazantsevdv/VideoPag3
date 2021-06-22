@@ -7,11 +7,11 @@ import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.videopag3.databinding.ItemLoadStateBinding
-import com.google.android.material.snackbar.Snackbar
 
 
 class LoaderStateAdapter(
-    private val retry: () -> Unit
+    private val retry: () -> Unit,
+    private val err: (errMsg: String) -> Unit
 ) : LoadStateAdapter<LoaderStateAdapter.ItemViewHolder>() {
 
     private lateinit var bindingItem: ItemLoadStateBinding
@@ -24,11 +24,7 @@ class LoaderStateAdapter(
             retry.invoke()
         }
         if (loadState is LoadState.Error) {
-            Snackbar.make(
-                bindingItem.root,
-                loadState.error.localizedMessage ?: "",
-                Snackbar.LENGTH_SHORT
-            ).show()
+            err.invoke(loadState.error.localizedMessage ?: "")
         }
     }
 
